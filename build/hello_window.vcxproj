@@ -331,6 +331,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="C:\Users\Ryan\Documents\ImageGen\src\config.h" />
     <ClCompile Include="C:\Users\Ryan\Documents\ImageGen\src\main.cpp" />
     <ClCompile Include="C:\Users\Ryan\Documents\ImageGen\src\glad.c" />
+    <ClInclude Include="C:\Users\Ryan\Documents\ImageGen\src\triangle_mesh.h" />
+    <ClCompile Include="C:\Users\Ryan\Documents\ImageGen\src\triangle_mesh.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="C:\Users\Ryan\Documents\ImageGen\build\ZERO_CHECK.vcxproj">

@@ -7,9 +7,15 @@
     <ClCompile Include="C:\Users\Ryan\Documents\ImageGen\src\glad.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="C:\Users\Ryan\Documents\ImageGen\src\triangle_mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="C:\Users\Ryan\Documents\ImageGen\src\config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="C:\Users\Ryan\Documents\ImageGen\src\triangle_mesh.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
