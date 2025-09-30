@@ -1,0 +1,94 @@
+#version 430
+
+layout(local_size_x = 1) in;
+
+struct Triangle {
+    ivec2 p1;
+    ivec2 p2;
+    ivec2 p3;
+    vec4  color;
+};
+
+layout(std430, binding = 0) buffer Triangles {
+    Triangle tris[];
+};
+
+layout(std430, binding = 1) buffer Fitness {
+    float fitness[];
+};
+
+uniform ivec2 imageSize;
+
+float pixelError(vec4 a, vec4 b) {
+    return (abs(a.r - b.r) + abs(a.g - b.g) + abs(a.b - b.b)) / 3.0;
+}
+
+void main() {
+    uint i = gl_GlobalInvocationID.x;
+    Triangle t = tris[i];
+
+    // Bounding box
+    int minX = clamp(min(t.p1.x, min(t.p2.x, t.p3.x)), 0, imageSize.x-1);
+    int maxX = clamp(max(t.p1.x, max(t.p2.x, t.p3.x)), 0, imageSize.x-1);
+    int minY = clamp(min(t.p1.y, min(t.p2.y, t.p3.y)), 0, imageSize.y-1);
+    int maxY = clamp(max(t.p1.y, max(t.p2.y, t.p3.y)), 0, imageSize.y-1);
+
+    float errorReduction = 0.0;
+
+    // Triangle rasterization using barycentric coordinates
+    vec2 p1 = vec2(t.p1), p2 = vec2(t.p2), p3 = vec2(t.p3);
+    float area = (p2.x-p1.x)*(p3.y-p1.y) - (p3.x-p1.x)*(p2.y-p1.y);
+
+    // Avoid degenerate triangles
+    if (abs(area) < 0.001) {
+        fitness[i] = 0.0;
+        return;
+    }
+
+    vec4 aveColor = vec4(0);
+    uint pixelCount = 0;
+
+    for (int y = minY; y <= maxY; y++) {
+        for (int x = minX; x <= maxX; x++) {
+            vec2 p = vec2(x+0.5, y+0.5);
+            
+            float w1 = ((p2.x-p.x)*(p3.y-p.y)-(p3.x-p.x)*(p2.y-p.y))/area;
+            float w2 = ((p3.x-p.x)*(p1.y-p.y)-(p1.x-p.x)*(p3.y-p.y))/area;
+            float w3 = ((p1.x-p.x)*(p2.y-p.y)-(p2.x-p.x)*(p1.y-p.y))/area;
+
+            if (w1 >= 0.0 && w2 >= 0.0 && w3 >= 0.0) {
+                aveColor += vec4(1, 1, 0, 1);
+                pixelCount++;
+            }
+        }
+    }
+
+    if (pixelCount == 0u) {
+        fitness[i] = 0.0;
+        return; 
+    }
+    t.color = aveColor / float(pixelCount);
+
+    for (int y = minY; y <= maxY; y++) {
+        for (int x = minX; x <= maxX; x++) {
+            vec2 p = vec2(x+0.5, y+0.5);
+            
+            float w1 = ((p2.x-p.x)*(p3.y-p.y)-(p3.x-p.x)*(p2.y-p.y))/area;
+            float w2 = ((p3.x-p.x)*(p1.y-p.y)-(p1.x-p.x)*(p3.y-p.y))/area;
+            float w3 = ((p1.x-p.x)*(p2.y-p.y)-(p2.x-p.x)*(p1.y-p.y))/area;
+
+            if (w1 >= 0.0 && w2 >= 0.0 && w3 >= 0.0) {
+                vec4 targetPixel = vec4(1, 1, 0, 1);
+                vec4 currentPixel = vec4(0, 0, 0, 1);
+
+                float oldError = pixelError(targetPixel, currentPixel);
+                float newError = pixelError(targetPixel, t.color);
+
+                errorReduction += oldError - newError;
+            }
+        }
+    }
+
+    tris[i] = t;
+    fitness[i] = errorReduction;
+}

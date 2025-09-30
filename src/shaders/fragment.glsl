@@ -1,10 +1,7 @@
 #version 330 core
-
-in vec3 fragmentColor;
-
-out vec4 screenColor;
-
-void main()
-{
-    screenColor = vec4(fragmentColor, 1.0);
+in vec2 uv;
+out vec4 FragColor;
+uniform sampler2D displayTex;
+void main() {
+    FragColor = texture(displayTex, uv);
 }
