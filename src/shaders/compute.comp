@@ -19,6 +19,9 @@ layout(std430, binding = 1) buffer Fitness {
 
 uniform ivec2 imageSize;
 
+layout(binding = 0, rgba8) uniform readonly image2D inputImage;
+layout(binding = 1, rgba8) uniform readonly image2D currentImage;
+
 float pixelError(vec4 a, vec4 b) {
     return (abs(a.r - b.r) + abs(a.g - b.g) + abs(a.b - b.b)) / 3.0;
 }
@@ -57,7 +60,7 @@ void main() {
             float w3 = ((p1.x-p.x)*(p2.y-p.y)-(p2.x-p.x)*(p1.y-p.y))/area;
 
             if (w1 >= 0.0 && w2 >= 0.0 && w3 >= 0.0) {
-                aveColor += vec4(1, 1, 0, 1);
+                aveColor += imageLoad(inputImage, ivec2(x,y)).rgba;
                 pixelCount++;
             }
         }
@@ -78,8 +81,8 @@ void main() {
             float w3 = ((p1.x-p.x)*(p2.y-p.y)-(p2.x-p.x)*(p1.y-p.y))/area;
 
             if (w1 >= 0.0 && w2 >= 0.0 && w3 >= 0.0) {
-                vec4 targetPixel = vec4(1, 1, 0, 1);
-                vec4 currentPixel = vec4(0, 0, 0, 1);
+                vec4 targetPixel = imageLoad(inputImage, ivec2(x,y)).rgba;
+                vec4 currentPixel = imageLoad(currentImage, ivec2(x,y)).rgba;
 
                 float oldError = pixelError(targetPixel, currentPixel);
                 float newError = pixelError(targetPixel, t.color);
